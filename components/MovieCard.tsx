@@ -1,26 +1,32 @@
 import type { Movie } from "@/types/movie";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 type MovieCardProps = {
   movie: Movie;
   reason: string;
 };
 
-export default function MovieCard({ movie, reason }: MovieCardProps): React.JSX.Element {
+export default function MovieCard({ movie }: MovieCardProps): React.JSX.Element {
   return (
-    <article className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="overflow-hidden rounded-2xl bg-gray-100">
-        <img src={movie.poster} alt={movie.title} className="h-56 w-full object-cover" />
-      </div>
+    <Card className="overflow-hidden bg-white/70 backdrop-blur-xl shadow-md transition-all duration-200 hover:scale-[1.01] hover:shadow-lg">
+      <CardContent className="space-y-5 p-6">
+        <div className="overflow-hidden rounded-2xl bg-zinc-100/80">
+          <img src={movie.poster} alt={movie.title} className="h-56 w-full object-cover" />
+        </div>
 
-      <h2 className="mt-4 text-xl font-semibold">{movie.title}</h2>
-      <p className="mt-1 text-sm text-gray-500">
-        {movie.year} · {movie.genre}
-      </p>
-      <p className="mt-3 text-sm text-gray-700">{movie.description}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className="bg-white/80">{movie.genre}</Badge>
+          <Badge className="bg-white/80">{movie.year}</Badge>
+        </div>
 
-      <div className="mt-4 rounded-2xl bg-softBlue p-3">
-        <p className="text-sm text-gray-700">{reason}</p>
-      </div>
-    </article>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold text-zinc-900">{movie.title}</h2>
+          <p className="text-sm text-zinc-600">{movie.description}</p>
+        </div>
+        <Separator />
+      </CardContent>
+    </Card>
   );
 }

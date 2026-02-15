@@ -1,6 +1,8 @@
 "use client";
 
 import MoodCard from "@/components/MoodCard";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { moodLabels, type Mood } from "@/types/mood";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,29 +19,43 @@ export default function HomePage(): React.JSX.Element {
   };
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-md px-4 py-8">
-      <h1 className="text-2xl font-bold">你现在是什么心情？</h1>
-      <p className="mt-2 text-sm text-gray-600">选择一个情绪，我们会给你一部电影推荐。</p>
+    <main className="relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
+      <div className="pointer-events-none absolute left-10 top-16 h-44 w-44 rounded-full bg-emerald-200/35 blur-3xl" />
+      <div className="pointer-events-none absolute right-6 top-28 h-52 w-52 rounded-full bg-indigo-200/35 blur-3xl" />
+      <section className="relative space-y-8">
+        <div className="mx-auto max-w-2xl space-y-3 text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+            Discover top-rated movies based on your mood
+          </h1>
+          <p className="text-sm text-zinc-500">
+            Choose the emotion that best matches your current vibe.
+          </p>
+        </div>
 
-      <section className="mt-6 grid grid-cols-2 gap-3">
-        {moodLabels.map((option) => (
-          <MoodCard
-            key={option.mood}
-            option={option}
-            selected={selectedMood === option.mood}
-            onSelect={setSelectedMood}
-          />
-        ))}
+        <Card className="mx-auto max-w-3xl bg-white/65 shadow-md backdrop-blur-2xl">
+          <CardContent className="space-y-8 p-6 sm:p-8">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {moodLabels.map((option) => (
+                <MoodCard
+                  key={option.mood}
+                  option={option}
+                  selected={selectedMood === option.mood}
+                  onSelect={setSelectedMood}
+                />
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              onClick={onContinue}
+              disabled={!selectedMood}
+              className="w-full rounded-xl bg-zinc-900 py-3 text-base"
+            >
+              获取推荐
+            </Button>
+          </CardContent>
+        </Card>
       </section>
-
-      <button
-        type="button"
-        onClick={onContinue}
-        disabled={!selectedMood}
-        className="mt-6 w-full rounded-3xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        获取推荐
-      </button>
     </main>
   );
 }

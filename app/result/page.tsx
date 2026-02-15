@@ -1,6 +1,11 @@
 "use client";
 
 import MovieCard from "@/components/MovieCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { RecommendResponse } from "@/types/movie";
 import { moodOptions, type Mood } from "@/types/mood";
 import Link from "next/link";
@@ -54,17 +59,55 @@ export default function ResultPage(): React.JSX.Element {
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-md px-4 py-8">
-      <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">你的电影推荐</h1>
-        <Link href="/" className="rounded-full border border-gray-200 px-3 py-1 text-sm text-gray-700">
-          重选情绪
-        </Link>
-      </div>
+    <main className="relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
+      <div className="pointer-events-none absolute left-10 top-16 h-44 w-44 rounded-full bg-sky-200/35 blur-3xl" />
+      <div className="pointer-events-none absolute right-8 top-28 h-52 w-52 rounded-full bg-violet-200/35 blur-3xl" />
+      <section className="relative mx-auto max-w-2xl space-y-8">
+        <div className="space-y-3 text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-zinc-900">Your movie match</h1>
+          <p className="text-sm text-zinc-500">Curated by your current emotion and viewing rhythm.</p>
+          {data ? <Badge className="bg-white/85 text-zinc-700">{data.movie.mood}</Badge> : null}
+        </div>
 
-      {loading ? <p className="text-sm text-gray-600">正在生成推荐...</p> : null}
-      {!loading && error ? <p className="text-sm text-red-500">{error}</p> : null}
-      {!loading && !error && data ? <MovieCard movie={data.movie} reason={data.reason} /> : null}
+        {loading ? (
+          <Card className="bg-white/65 backdrop-blur-2xl">
+            <CardContent className="space-y-4 p-6 sm:p-8">
+              <Skeleton className="h-56 w-full" />
+              <Skeleton className="h-5 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {!loading && error ? (
+          <Card className="bg-white/65 backdrop-blur-2xl">
+            <CardContent className="p-6 sm:p-8">
+              <p className="text-sm text-zinc-600">{error}</p>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {!loading && !error && data ? (
+          <div className="space-y-6">
+            <MovieCard movie={data.movie} reason={data.reason} />
+            <Card className="bg-zinc-100/85 backdrop-blur">
+              <CardContent className="space-y-3 p-6 sm:p-8">
+                <div className="flex items-center gap-2">
+                  <span aria-hidden="true">✨</span>
+                  <p className="text-base font-medium text-zinc-900">推荐理由</p>
+                </div>
+                <Separator />
+                <p className="text-sm leading-relaxed text-zinc-700">{data.reason}</p>
+              </CardContent>
+            </Card>
+          </div>
+        ) : null}
+
+        <Button asChild variant="ghost" className="w-full bg-white/70 backdrop-blur-xl">
+          <Link href="/">重选情绪</Link>
+        </Button>
+      </section>
     </main>
   );
 }
