@@ -1,4 +1,4 @@
-import { getRecommendation } from "@/lib/recommend";
+import { getDeepSeekRecommendationAction } from "@/app/actions/recommend";
 import { moodOptions, type Mood } from "@/types/mood";
 import { NextResponse } from "next/server";
 
@@ -11,13 +11,17 @@ function isMood(input: string): input is Mood {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as RecommendRequestBody;
-  const moodInput = body.mood;
+  try {
+    const body = (await request.json()) as RecommendRequestBody;
+    const moodInput = body.mood;
 
-  if (!moodInput || !isMood(moodInput)) {
-    return NextResponse.json({ error: "Invalid mood" }, { status: 400 });
+    if (!moodInput || !isMood(moodInput)) {
+      return NextResponse.json({ error: "Invalid mood" }, { status: 400 });
+    }
+
+    const data = await getDeepSeekRecommendationAction(moodInput);
+    return NextResponse.json(data, { status: 200 });
+  } catch (_error) {
+    return NextResponse.json({ error: "Recommend service unavailable" }, { status: 500 });
   }
-
-  const data = getRecommendation(moodInput);
-  return NextResponse.json(data, { status: 200 });
 }

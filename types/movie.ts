@@ -1,16 +1,21 @@
-import type { Mood } from "./mood";
+import type { Mood } from './mood';
+
+export interface MovieInfo {
+  url: string;
+  rating: number;
+  tag: string[];
+}
 
 export type Movie = {
-  id: string;
   title: string;
-  year: number;
-  genre: string;
-  poster: string;
-  description: string;
-  mood: Mood;
+  date: number;
+  rating: string;
+  source: MovieInfo;
+  duration: string;
+  reason: string;
 };
 
 export type RecommendResponse = {
-  movie: Movie;
+  movies: Movie[];
   reason: string;
 };
