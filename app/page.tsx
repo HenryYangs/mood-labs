@@ -1,21 +1,15 @@
 "use client";
 
 import MoodCard from "@/components/MoodCard";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { moodLabels, type Mood } from "@/types/mood";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export default function HomePage(): React.JSX.Element {
-  const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const router = useRouter();
 
-  const onContinue = (): void => {
-    if (!selectedMood) {
-      return;
-    }
-    router.push(`/result?mood=${selectedMood}`);
+  const onSelectMood = (mood: Mood): void => {
+    router.push(`/result?mood=${mood}`);
   };
 
   return (
@@ -34,25 +28,16 @@ export default function HomePage(): React.JSX.Element {
 
         <Card className="mx-auto max-w-3xl bg-white/65 shadow-md backdrop-blur-2xl">
           <CardContent className="space-y-8 p-6 sm:p-8">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-3 justify-items-center gap-3">
               {moodLabels.map((option) => (
                 <MoodCard
                   key={option.mood}
                   option={option}
-                  selected={selectedMood === option.mood}
-                  onSelect={setSelectedMood}
+                  selected={false}
+                  onSelect={onSelectMood}
                 />
               ))}
             </div>
-
-            <Button
-              type="button"
-              onClick={onContinue}
-              disabled={!selectedMood}
-              className="w-full rounded-xl bg-zinc-900 py-3 text-base"
-            >
-              获取推荐
-            </Button>
           </CardContent>
         </Card>
       </section>

@@ -22,7 +22,7 @@ export default function MoodCard({ option, selected, onSelect }: MoodCardProps):
     <button
       type="button"
       onClick={(): void => onSelect(option.mood)}
-      className="w-full text-left transition-all duration-200 hover:scale-105"
+      className="w-[220px] max-w-full text-left transition-all duration-200 hover:scale-105"
     >
       <Card
         className={cn(
@@ -32,9 +32,9 @@ export default function MoodCard({ option, selected, onSelect }: MoodCardProps):
             : "ring-1 ring-white/60 shadow-md"
         )}
       >
-        <CardContent className="space-y-2 p-6">
-          <p className="text-3xl leading-none">{option.emoji}</p>
-          <p className="text-lg font-medium text-zinc-900">{option.label}</p>
+        <CardContent className="space-y-2 p-5">
+          <p className="text-2xl leading-none">{option.emoji}</p>
+          <p className="text-base font-medium text-zinc-900">{option.label}</p>
         </CardContent>
       </Card>
     </button>
