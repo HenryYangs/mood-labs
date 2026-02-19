@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Movie, RecommendResponse } from "@/types/movie";
 import { moodOptions, type Mood } from "@/types/mood";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 function isMood(input: string | null): input is Mood {
@@ -16,7 +17,10 @@ function isMood(input: string | null): input is Mood {
   return moodOptions.includes(input as Mood);
 }
 
-export default function ResultPage(): React.JSX.Element {
+export default function MovieResultPage(): React.JSX.Element {
+  const params = useParams<{ mood?: string }>();
+  const routeMood = params?.mood ?? null;
+
   const [movies, setMovies] = useState<Movie[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
@@ -91,16 +95,15 @@ export default function ResultPage(): React.JSX.Element {
     }
     hasInitializedRef.current = true;
 
-    const moodParam = new URLSearchParams(window.location.search).get("mood");
-    if (!isMood(moodParam)) {
+    if (!isMood(routeMood)) {
       setError("心情参数无效，请返回重新选择。");
       setLoading(false);
       return;
     }
 
-    setSelectedMood(moodParam);
-    void loadRecommendation(moodParam, false);
-  }, []);
+    setSelectedMood(routeMood);
+    void loadRecommendation(routeMood, false);
+  }, [routeMood]);
 
   const currentMovie = movies[currentIndex];
 
@@ -137,16 +140,16 @@ export default function ResultPage(): React.JSX.Element {
 
         {loading ? (
           <div className="space-y-4 rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
-              <Skeleton className="h-56 w-full" />
-              <Skeleton className="h-5 w-1/2" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-56 w-full" />
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
           </div>
         ) : null}
 
         {!loading && error ? (
           <div className="rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
-              <p className="text-sm text-zinc-600">{error}</p>
+            <p className="text-sm text-zinc-600">{error}</p>
           </div>
         ) : null}
 
@@ -167,7 +170,7 @@ export default function ResultPage(): React.JSX.Element {
         ) : null}
 
         <Button asChild variant="ghost" className="w-full bg-white/70 backdrop-blur-xl">
-          <Link href="/">重选情绪</Link>
+          <Link href="/movie">重选情绪</Link>
         </Button>
       </section>
     </main>
