@@ -1,7 +1,6 @@
 "use client";
 
 import MoodCard from "@/components/MoodCard";
-import { Card, CardContent } from "@/components/ui/card";
 import { moodLabels, type Mood } from "@/types/mood";
 import { useRouter } from "next/navigation";
 
@@ -26,20 +25,18 @@ export default function HomePage(): React.JSX.Element {
           </p>
         </div>
 
-        <Card className="mx-auto max-w-3xl bg-white/65 shadow-md backdrop-blur-2xl">
-          <CardContent className="space-y-8 p-6 sm:p-8">
-            <div className="grid grid-cols-3 justify-items-center gap-3">
-              {moodLabels.map((option) => (
-                <MoodCard
-                  key={option.mood}
-                  option={option}
-                  selected={false}
-                  onSelect={onSelectMood}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mx-auto max-w-3xl space-y-8 p-6 sm:p-8">
+          <div className="grid grid-cols-3 justify-items-center gap-3">
+            {moodLabels.map((option) => (
+              <MoodCard
+                key={option.mood}
+                option={option}
+                selected={false}
+                onSelect={onSelectMood}
+              />
+            ))}
+          </div>
+        </div>
       </section>
     </main>
   );

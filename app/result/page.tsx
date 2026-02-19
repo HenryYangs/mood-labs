@@ -3,12 +3,11 @@
 import MovieCard from "@/components/MovieCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Movie, RecommendResponse } from "@/types/movie";
 import { moodOptions, type Mood } from "@/types/mood";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function isMood(input: string | null): input is Mood {
   if (!input) {
@@ -24,6 +23,7 @@ export default function ResultPage(): React.JSX.Element {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const hasInitializedRef = useRef<boolean>(false);
 
   function normalizeMovies(payload: RecommendResponse): Movie[] {
     if (Array.isArray(payload)) {
@@ -86,6 +86,11 @@ export default function ResultPage(): React.JSX.Element {
   }
 
   useEffect(() => {
+    if (hasInitializedRef.current) {
+      return;
+    }
+    hasInitializedRef.current = true;
+
     const moodParam = new URLSearchParams(window.location.search).get("mood");
     if (!isMood(moodParam)) {
       setError("心情参数无效，请返回重新选择。");
@@ -131,45 +136,33 @@ export default function ResultPage(): React.JSX.Element {
         </div>
 
         {loading ? (
-          <Card className="bg-white/65 backdrop-blur-2xl">
-            <CardContent className="space-y-4 p-6 sm:p-8">
+          <div className="space-y-4 rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
               <Skeleton className="h-56 w-full" />
               <Skeleton className="h-5 w-1/2" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-5/6" />
-            </CardContent>
-          </Card>
+          </div>
         ) : null}
 
         {!loading && error ? (
-          <Card className="bg-white/65 backdrop-blur-2xl">
-            <CardContent className="p-6 sm:p-8">
+          <div className="rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
               <p className="text-sm text-zinc-600">{error}</p>
-            </CardContent>
-          </Card>
+          </div>
         ) : null}
 
         {!loading && !error && movies.length ? (
           <div className="space-y-6">
-            <MovieCard movie={currentMovie} />
-
-            <div className="flex items-center justify-between gap-3">
-              <Button variant="outline" onClick={showPrevMovie} disabled={currentIndex === 0}>
-                上一部
-              </Button>
-              <Badge className="bg-white/85 text-zinc-700">
-                {currentIndex + 1} / {movies.length}
-              </Badge>
-              <Button
-                variant="outline"
-                onClick={(): void => {
-                  void showNextMovie();
-                }}
-                disabled={currentIndex === movies.length - 1 || loadingMore}
-              >
-                下一部
-              </Button>
-            </div>
+            <MovieCard
+              movie={currentMovie}
+              currentIndex={currentIndex}
+              total={movies.length}
+              onPrev={showPrevMovie}
+              onNext={(): void => {
+                void showNextMovie();
+              }}
+              disablePrev={currentIndex === 0}
+              disableNext={currentIndex === movies.length - 1 || loadingMore}
+            />
           </div>
         ) : null}
 

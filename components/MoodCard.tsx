@@ -22,7 +22,7 @@ export default function MoodCard({ option, selected, onSelect }: MoodCardProps):
     <button
       type="button"
       onClick={(): void => onSelect(option.mood)}
-      className="w-[220px] max-w-full text-left transition-all duration-200 hover:scale-105"
+      className="w-[220px] max-w-full cursor-pointer text-left transition-all duration-200 hover:scale-105"
     >
       <Card
         className={cn(
