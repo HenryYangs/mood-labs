@@ -46,7 +46,7 @@ function buildPrompt(mood: Mood): DeepSeekMessage[] {
 - "source" 是电影的信息，请返回一个对象，包含以下信息：
   - url: 电影在YouTube的播放链接，必须是完整版的电影链接
   - rating：电影在每个平台的评分，满分为10分，数字类型
-  - tag：电影的标签，最多返回前五个，数组形式
+  - tag：电影的标签，最多返回前五个，数组形式，使用中文
 - 不要使用Markdown格式
 - JSON内容无需换行符
 `,
