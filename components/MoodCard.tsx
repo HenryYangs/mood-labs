@@ -26,15 +26,17 @@ export default function MoodCard({ option, selected, onSelect }: MoodCardProps):
     >
       <Card
         className={cn(
-          "bg-white/70 backdrop-blur-xl transition-all duration-200 hover:shadow-lg",
+          "bg-(--movie-surface) backdrop-blur-xl transition-all duration-200 hover:shadow-lg",
           selected
             ? cn("ring-2 ring-violet-400 shadow-lg", glowClassByMood[option.mood])
             : "ring-1 ring-white/60 shadow-md"
         )}
       >
-        <CardContent className="space-y-2 p-5">
+        <CardContent className="flex items-center justify-center gap-2 p-5 text-center">
           <p className="text-2xl leading-none">{option.emoji}</p>
-          <p className="text-base font-medium text-zinc-900">{option.label}</p>
+          <p className="whitespace-nowrap text-base font-medium text-white">
+            {option.label}
+          </p>
         </CardContent>
       </Card>
     </button>
