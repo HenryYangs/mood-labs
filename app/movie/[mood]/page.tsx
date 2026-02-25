@@ -1,14 +1,14 @@
 "use client";
 
 import MovieCard from "@/components/MovieCard";
+import MovieHeader from "@/components/MovieHeader";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Movie, RecommendResponse } from "@/types/movie";
-import { moodOptions, type Mood } from "@/types/mood";
-import Link from "next/link";
+import { moodLabels, moodOptions, type Mood } from "@/types/mood";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import "../theme.css";
 
 function isMood(input: string | null): input is Mood {
   if (!input) {
@@ -106,6 +106,12 @@ export default function MovieResultPage(): React.JSX.Element {
   }, [routeMood]);
 
   const currentMovie = movies[currentIndex];
+  const headerMoodLabel = isMood(routeMood)
+    ? moodLabels.find((item) => item.mood === routeMood)
+    : null;
+  const headerTitle = headerMoodLabel
+    ? `感觉 ${headerMoodLabel.emoji} ${headerMoodLabel.label}`
+    : "MoodLabs/Movie";
 
   const showPrevMovie = (): void => {
     setCurrentIndex((prev) => Math.max(0, prev - 1));
@@ -128,16 +134,10 @@ export default function MovieResultPage(): React.JSX.Element {
   };
 
   return (
-    <main className="relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
-      <div className="pointer-events-none absolute left-10 top-16 h-44 w-44 rounded-full bg-sky-200/35 blur-3xl" />
-      <div className="pointer-events-none absolute right-8 top-28 h-52 w-52 rounded-full bg-violet-200/35 blur-3xl" />
-      <section className="relative mx-auto max-w-2xl space-y-8">
-        <div className="space-y-3 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900">Your movie match</h1>
-          <p className="text-sm text-zinc-500">Curated by your current emotion and viewing rhythm.</p>
-          {selectedMood ? <Badge className="bg-white/85 text-zinc-700">{selectedMood}</Badge> : null}
-        </div>
-
+    <main className="movie-theme relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
+      <MovieHeader showChangeMoodButton title={headerTitle} />
+      
+      <section className="relative mx-auto space-y-8">
         {loading ? (
           <div className="space-y-4 rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
             <Skeleton className="h-56 w-full" />
@@ -169,9 +169,6 @@ export default function MovieResultPage(): React.JSX.Element {
           </div>
         ) : null}
 
-        <Button asChild variant="ghost" className="w-full bg-white/70 backdrop-blur-xl">
-          <Link href="/movie">重选情绪</Link>
-        </Button>
       </section>
     </main>
   );

@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import type { Movie } from "@/types/movie";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 type MovieCardProps = {
   movie: Movie;
@@ -69,23 +68,24 @@ export default function MovieCard({
   };
 
   return (
-    <div className="space-y-5 overflow-hidden rounded-2xl bg-white/70 p-6 shadow-md backdrop-blur-xl transition-all duration-200 hover:scale-[1.01] hover:shadow-lg">
-        {embedUrl ? (
-          <div className="mx-auto w-full max-w-[640px] h-[380px] overflow-hidden rounded-2xl bg-zinc-100/80">
-            <iframe
-              src={embedUrl}
-              title={`${movie.title} trailer`}
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
-        ) : null}
+    <div className="overflow-hidden rounded-2xl">
+      {embedUrl ? (
+        <div className="mx-auto w-full h-[380px] overflow-hidden bg-zinc-100/80">
+          <iframe
+            src={embedUrl}
+            title={`${movie.title} trailer`}
+            className="h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
+      ) : null}
 
+      <div className="space-y-5 bg-(--movie-surface) p-5">
         <div className="space-y-2">
           <h2
-            className="cursor-pointer text-2xl font-semibold text-zinc-900"
+            className="cursor-pointer text-2xl font-semibold text-white"
             onMouseEnter={(): void => {
               setTooltipVisible(true);
             }}
@@ -99,7 +99,7 @@ export default function MovieCard({
           >
             {movie.title}
           </h2>
-          <div className="space-y-1 text-sm text-zinc-600">
+          <div className="space-y-1 text-sm text-white/85">
             <p>上映时间: {displayDate}</p>
             <p>时长: {displayDuration}</p>
             <p>评分: {displayRating}</p>
@@ -121,33 +121,38 @@ export default function MovieCard({
         ) : null}
 
         {movie.reason ? (
-          <div className="rounded-2xl bg-zinc-100/85 p-4">
-            <p className="text-sm leading-relaxed text-zinc-700">{movie.reason}</p>
+          <div>
+            <p className="text-sm leading-relaxed text-zinc-300">{movie.reason}</p>
           </div>
         ) : null}
 
         <div className="flex items-center justify-between gap-3">
-          <Button variant="outline" onClick={onPrev} disabled={disablePrev}>
+          <Button
+            onClick={onPrev}
+            disabled={disablePrev}
+            className="h-12 cursor-pointer rounded-xl bg-linear-to-r from-[#b13a47] to-[#c9464f] px-6 text-base text-white shadow-sm transition-all duration-300 hover:bg-linear-to-r hover:from-[#ff0030] hover:to-[#ff1a3d] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
             上一部
           </Button>
-          <Badge className="bg-white/85 text-zinc-700">
-            {currentIndex + 1} / {total}
-          </Badge>
-          <Button variant="outline" onClick={onNext} disabled={disableNext}>
+
+          <Button
+            onClick={onNext}
+            disabled={disableNext}
+            className="h-12 cursor-pointer rounded-xl bg-linear-to-r from-[#b13a47] to-[#c9464f] px-6 text-base text-white shadow-sm transition-all duration-300 hover:bg-linear-to-r hover:from-[#ff0030] hover:to-[#ff1a3d] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
             下一部
           </Button>
         </div>
+      </div>
 
-        <Separator />
-
-        {tooltipVisible ? (
-          <div
-            ref={tooltipRef}
-            className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full rounded-md bg-zinc-900 px-2 py-1 text-xs text-white shadow-md"
-          >
-            点击复制电影标题
-          </div>
-        ) : null}
+      {tooltipVisible ? (
+        <div
+          ref={tooltipRef}
+          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full rounded-md bg-zinc-900 px-2 py-1 text-xs text-white shadow-md"
+        >
+          点击复制电影标题
+        </div>
+      ) : null}
     </div>
   );
 }

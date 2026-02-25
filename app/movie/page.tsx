@@ -1,10 +1,9 @@
 "use client";
 
 import MoodCard from "@/components/MoodCard";
+import MovieHeader from "@/components/MovieHeader";
 import { moodLabels, type Mood } from "@/types/mood";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import logo from "../assets/images/logo-movie.png";
 import "./theme.css";
 
 export default function MoviePage(): React.JSX.Element {
@@ -16,16 +15,7 @@ export default function MoviePage(): React.JSX.Element {
 
   return (
     <main className="movie-theme relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
-      <header className="relative mb-8 h-16 rounded-2xl bg-(--movie-surface) px-5 shadow-sm backdrop-blur-sm">
-        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl">
-          <Image src={logo} alt="MoodLabs" width={32} height={32} />
-        </span>
-        <div className="absolute inset-0 flex items-center justify-center text-center">
-          <span className="text-xl font-semibold text-white">
-            MoodLabs/Movie
-          </span>
-        </div>
-      </header>
+      <MovieHeader title="MoodLabs/Movie" />
       
       <section className="relative">
         <div className="text-center mb-10">
