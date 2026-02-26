@@ -191,6 +191,28 @@ export default function MovieResultPage(): React.JSX.Element {
         ) : null}
 
       </section>
+
+      <footer className="mt-10 text-center text-sm text-white/75">
+        Created By{" "}
+        <a
+          href="https://x.com/shuzai_dd"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          shuzai_daydreaming
+        </a>
+        , Inspired By{" "}
+        <a
+          href="https://mood2movie.com"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          mood2movie.com
+        </a>
+        .
+      </footer>
     </main>
   );
 }
