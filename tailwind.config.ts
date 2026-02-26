@@ -7,13 +7,7 @@ const config: Config = {
     "./lib/**/*.{ts,tsx}"
   ],
   theme: {
-    extend: {
-      colors: {
-        softPink: "#ffe4ec",
-        softBlue: "#e6f1ff",
-        softPurple: "#f2ebff"
-      }
-    }
+    extend: {}
   },
   plugins: []
 };

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useLanguage } from "@/app/i18n/language-context";
 import type { Movie } from "@/types/movie";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,11 @@ export default function MovieCard({
   disablePrev,
   disableNext
 }: MovieCardProps): React.JSX.Element {
+  const { language } = useLanguage();
   const embedUrl = getYoutubeEmbedUrl(movie.source?.url);
   const displayRating = movie.source?.rating ?? movie.rating ?? "N/A";
-  const displayDuration = movie.duration ? `${movie.duration} min` : "N/A";
+  const displayDuration =
+    movie.duration ? `${movie.duration} ${language === "zh" ? "分钟" : "min"}` : "N/A";
   const displayDate = movie.date ?? (movie.year ? String(movie.year) : "N/A");
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -61,9 +64,9 @@ export default function MovieCard({
   const handleCopyTitle = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(movie.title);
-      window.alert("复制成功");
+      window.alert(language === "zh" ? "复制成功" : "Copied");
     } catch {
-      window.alert("复制失败，请重试");
+      window.alert(language === "zh" ? "复制失败，请重试" : "Copy failed, please try again.");
     }
   };
 
@@ -100,9 +103,9 @@ export default function MovieCard({
             {movie.title}
           </h2>
           <div className="space-y-1 text-sm text-white/85">
-            <p>上映时间: {displayDate}</p>
-            <p>时长: {displayDuration}</p>
-            <p>评分: {displayRating}</p>
+            <p>{language === "zh" ? "上映时间" : "Release"}: {displayDate}</p>
+            <p>{language === "zh" ? "时长" : "Duration"}: {displayDuration}</p>
+            <p>{language === "zh" ? "评分" : "Rating"}: {displayRating}</p>
           </div>
         </div>
 
@@ -132,7 +135,7 @@ export default function MovieCard({
             disabled={disablePrev}
             className="h-12 cursor-pointer rounded-xl bg-linear-to-r from-[#b13a47] to-[#c9464f] px-6 text-base text-white shadow-sm transition-all duration-300 hover:bg-linear-to-r hover:from-[#ff0030] hover:to-[#ff1a3d] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            上一部
+            {language === "zh" ? "上一部" : "Previous"}
           </Button>
 
           <Button
@@ -140,7 +143,7 @@ export default function MovieCard({
             disabled={disableNext}
             className="h-12 cursor-pointer rounded-xl bg-linear-to-r from-[#b13a47] to-[#c9464f] px-6 text-base text-white shadow-sm transition-all duration-300 hover:bg-linear-to-r hover:from-[#ff0030] hover:to-[#ff1a3d] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            下一部
+            {language === "zh" ? "下一部" : "Next"}
           </Button>
         </div>
       </div>
@@ -150,7 +153,7 @@ export default function MovieCard({
           ref={tooltipRef}
           className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full rounded-md bg-zinc-900 px-2 py-1 text-xs text-white shadow-md"
         >
-          点击复制电影标题
+          {language === "zh" ? "点击复制电影标题" : "Click to copy movie title"}
         </div>
       ) : null}
     </div>

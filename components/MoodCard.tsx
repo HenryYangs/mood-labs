@@ -6,9 +6,15 @@ type MoodCardProps = {
   option: MoodLabel;
   selected: boolean;
   onSelect: (mood: MoodLabel["mood"]) => void;
+  displayLabel?: string;
 };
 
-export default function MoodCard({ option, selected, onSelect }: MoodCardProps): React.JSX.Element {
+export default function MoodCard({
+  option,
+  selected,
+  onSelect,
+  displayLabel
+}: MoodCardProps): React.JSX.Element {
   const glowClassByMood: Record<MoodLabel["mood"], string> = {
     happy: "shadow-amber-200/70",
     sad: "shadow-blue-200/70",
@@ -35,7 +41,7 @@ export default function MoodCard({ option, selected, onSelect }: MoodCardProps):
         <CardContent className="flex items-center justify-center gap-2 p-5 text-center">
           <p className="text-2xl leading-none">{option.emoji}</p>
           <p className="whitespace-nowrap text-base font-medium text-white">
-            {option.label}
+            {displayLabel ?? option.label}
           </p>
         </CardContent>
       </Card>

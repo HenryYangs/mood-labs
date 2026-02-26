@@ -2,11 +2,14 @@
 
 import MoodCard from "@/components/MoodCard";
 import MovieHeader from "@/components/MovieHeader";
+import { useLanguage } from "@/app/i18n/language-context";
+import { moodLabelsEn } from "@/lib/moodLabelsEn";
 import { moodLabels, type Mood } from "@/types/mood";
 import { useRouter } from "next/navigation";
 import "./theme.css";
 
 export default function MoviePage(): React.JSX.Element {
+  const { language } = useLanguage();
   const router = useRouter();
 
   const onSelectMood = (mood: Mood): void => {
@@ -20,10 +23,14 @@ export default function MoviePage(): React.JSX.Element {
       <section className="relative">
         <div className="text-center mb-10">
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-white md:text-5xl nunito">
-            跟随你的心情，邂逅高分佳片
+            {language === "zh"
+              ? "跟随你的心情，邂逅高分佳片"
+              : "Discover top-rated movies based on your mood"}
           </h1>
           <p className="text-xl text-white/85">
-            你今天心情如何？
+            {language === "zh"
+              ? "你今天心情如何？"
+              : "How are you feeling right now?"}
           </p>
         </div>
 
@@ -35,6 +42,9 @@ export default function MoviePage(): React.JSX.Element {
                 option={option}
                 selected={false}
                 onSelect={onSelectMood}
+                displayLabel={
+                  language === "zh" ? option.label : moodLabelsEn[option.mood]
+                }
               />
             ))}
           </div>

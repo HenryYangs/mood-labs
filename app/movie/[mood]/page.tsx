@@ -2,6 +2,8 @@
 
 import MovieCard from "@/components/MovieCard";
 import MovieHeader from "@/components/MovieHeader";
+import { useLanguage } from "@/app/i18n/language-context";
+import { moodLabelsEn } from "@/lib/moodLabelsEn";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Movie, RecommendResponse } from "@/types/movie";
@@ -18,6 +20,7 @@ function isMood(input: string | null): input is Mood {
 }
 
 export default function MovieResultPage(): React.JSX.Element {
+  const { language } = useLanguage();
   const params = useParams<{ mood?: string }>();
   const routeMood = params?.mood ?? null;
 
@@ -56,7 +59,11 @@ export default function MovieResultPage(): React.JSX.Element {
 
       if (!response.ok) {
         if (!append) {
-          setError("推荐服务暂时不可用，请稍后再试。");
+          setError(
+            language === "zh"
+              ? "推荐服务暂时不可用，请稍后再试。"
+              : "Recommendation service is unavailable. Please try again later."
+          );
         }
         return;
       }
@@ -65,7 +72,11 @@ export default function MovieResultPage(): React.JSX.Element {
       const parsedMovies = normalizeMovies(payload);
       if (!parsedMovies.length) {
         if (!append) {
-          setError("暂无推荐结果，请稍后再试。");
+          setError(
+            language === "zh"
+              ? "暂无推荐结果，请稍后再试。"
+              : "No recommendations found. Please try again later."
+          );
         }
         return;
       }
@@ -78,7 +89,11 @@ export default function MovieResultPage(): React.JSX.Element {
       }
     } catch (_error) {
       if (!append) {
-        setError("请求失败，请检查网络后重试。");
+        setError(
+          language === "zh"
+            ? "请求失败，请检查网络后重试。"
+            : "Request failed. Please check your network and try again."
+        );
       }
     } finally {
       if (append) {
@@ -96,7 +111,11 @@ export default function MovieResultPage(): React.JSX.Element {
     hasInitializedRef.current = true;
 
     if (!isMood(routeMood)) {
-      setError("心情参数无效，请返回重新选择。");
+      setError(
+        language === "zh"
+          ? "心情参数无效，请返回重新选择。"
+          : "Invalid mood parameter. Please go back and choose again."
+      );
       setLoading(false);
       return;
     }
@@ -110,7 +129,9 @@ export default function MovieResultPage(): React.JSX.Element {
     ? moodLabels.find((item) => item.mood === routeMood)
     : null;
   const headerTitle = headerMoodLabel
-    ? `感觉 ${headerMoodLabel.emoji} ${headerMoodLabel.label}`
+    ? language === "zh"
+      ? `感觉 ${headerMoodLabel.emoji} ${headerMoodLabel.label}`
+      : `Feeling ${headerMoodLabel.emoji} ${moodLabelsEn[headerMoodLabel.mood]}`
     : "MoodLabs/Movie";
 
   const showPrevMovie = (): void => {
