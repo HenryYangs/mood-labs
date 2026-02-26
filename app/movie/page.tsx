@@ -40,7 +40,6 @@ export default function MoviePage(): React.JSX.Element {
               <MoodCard
                 key={option.mood}
                 option={option}
-                selected={false}
                 onSelect={onSelectMood}
                 displayLabel={
                   language === "zh" ? option.label : moodLabelsEn[option.mood]
