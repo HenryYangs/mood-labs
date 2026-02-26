@@ -2,6 +2,7 @@
 
 import MovieCard from "@/components/MovieCard";
 import MovieHeader from "@/components/MovieHeader";
+import MovieNotFound from "../not-found";
 import { useLanguage } from "@/app/i18n/language-context";
 import { moodLabelsEn } from "@/lib/moodLabelsEn";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ export default function MovieResultPage(): React.JSX.Element {
   const { language } = useLanguage();
   const params = useParams<{ mood?: string }>();
   const routeMood = params?.mood ?? null;
+  const isInvalidMood = !isMood(routeMood);
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -105,24 +107,17 @@ export default function MovieResultPage(): React.JSX.Element {
   }
 
   useEffect(() => {
+    if (isInvalidMood) {
+      return;
+    }
     if (hasInitializedRef.current) {
       return;
     }
     hasInitializedRef.current = true;
 
-    if (!isMood(routeMood)) {
-      setError(
-        language === "zh"
-          ? "心情参数无效，请返回重新选择。"
-          : "Invalid mood parameter. Please go back and choose again."
-      );
-      setLoading(false);
-      return;
-    }
-
     setSelectedMood(routeMood);
     void loadRecommendation(routeMood, false);
-  }, [routeMood]);
+  }, [isInvalidMood, routeMood]);
 
   const currentMovie = movies[currentIndex];
   const headerMoodLabel = isMood(routeMood)
@@ -153,6 +148,10 @@ export default function MovieResultPage(): React.JSX.Element {
       await loadRecommendation(selectedMood, true);
     }
   };
+
+  if (isInvalidMood) {
+    return <MovieNotFound />;
+  }
 
   return (
     <main className="movie-theme relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
