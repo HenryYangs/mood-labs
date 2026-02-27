@@ -1,108 +1,173 @@
 import { getDeepSeekRecommendationAction } from '@/app/actions/recommend';
-import type { Movie } from '@/types/movie';
 import { moodOptions, type Mood } from '@/types/mood';
+import { createClient } from '@vercel/kv';
 import { NextResponse } from 'next/server';
 
 type RecommendRequestBody = {
   mood?: string;
 };
 
-const DEV_RECOMMEND_MOVIES: Movie[] = [
-  {
-    title: 'The Secret Life of Walter Mitty',
-    date: '2013-12-25',
-    rating: '7.3',
-    source: {
-      url: 'https://www.youtube.com/watch?v=HddkucmzMAY',
-      rating: 7.3,
-      tag: ['Adventure', 'Drama', 'Comedy', 'Inspirational', 'Fantasy'],
-    },
-    duration: '114',
-    reason:
-      '这部电影讲述一个平凡人通过冒险找到生活意义的故事，能帮助缓解焦虑，鼓励勇敢面对挑战。',
-  },
-  {
-    title: 'The Pursuit of Happyness',
-    date: '2006-12-15',
-    rating: '8.0',
-    source: {
-      url: 'https://www.youtube.com/watch?v=89Kq8SDyvfg',
-      rating: 8,
-      tag: ['Biography', 'Drama', 'Inspirational', 'Family', 'Struggle'],
-    },
-    duration: '117',
-    reason:
-      '基于真实故事，展现坚韧不拔的精神，能激励焦虑中的观众看到希望和坚持的力量。',
-  },
-  {
-    title: 'Inside Out',
-    date: '2015-06-19',
-    rating: '8.1',
-    source: {
-      url: 'https://www.youtube.com/watch?v=yRUAzGQ3nSY',
-      rating: 8.1,
-      tag: ['Animation', 'Adventure', 'Comedy', 'Family', 'Emotional'],
-    },
-    duration: '95',
-    reason:
-      '通过动画形式探讨情绪管理，帮助理解焦虑等复杂情感，提供轻松而深刻的安慰。',
-  },
-  {
-    title: 'The Shawshank Redemption',
-    date: '1994-09-23',
-    rating: '9.3',
-    source: {
-      url: 'https://www.youtube.com/watch?v=6hB3S9bIaco',
-      rating: 9.3,
-      tag: ['Drama', 'Crime', 'Inspirational', 'Hope', 'Friendship'],
-    },
-    duration: '142',
-    reason:
-      '经典电影讲述希望与救赎，在困境中保持乐观，能缓解焦虑并带来心灵慰藉。',
-  },
-  {
-    title: 'Amélie',
-    date: '2001-04-25',
-    rating: '8.3',
-    source: {
-      url: 'https://www.youtube.com/watch?v=HUECWi5pX7o',
-      rating: 8.3,
-      tag: ['Comedy', 'Romance', 'Fantasy', 'Whimsical', 'Heartwarming'],
-    },
-    duration: '122',
-    reason:
-      '充满奇幻和温暖的电影，通过主角的小善举带来快乐，能分散焦虑并提升心情。',
-  },
-];
+// Per-IP short window limit: one request in N seconds.
+const IP_WINDOW_SECONDS_LIMIT = 5;
+// Per-IP daily hard cap.
+const IP_DAILY_REQUEST_LIMIT = 1000;
+// Global daily hard cap for the whole project.
+const PROJECT_DAILY_REQUEST_LIMIT = 100000;
+const kvRestApiUrl =
+  process.env.mood_labs_KV_REST_API_URL ??
+  process.env.MOOD_LABS_KV_REST_API_URL ??
+  process.env.KV_REST_API_URL;
+const kvRestApiToken =
+  process.env.mood_labs_KV_REST_API_TOKEN ??
+  process.env.MOOD_LABS_KV_REST_API_TOKEN ??
+  process.env.KV_REST_API_TOKEN;
+const hasKvConfig = Boolean(kvRestApiUrl) && Boolean(kvRestApiToken);
+const kvClient = hasKvConfig
+  ? createClient({
+      url: kvRestApiUrl as string,
+      token: kvRestApiToken as string,
+    })
+  : null;
+
+function logInfo(message: string, data?: Record<string, unknown>): void {
+  console.info(`[api/recommend] ${message}`, data ?? {});
+}
+
+function logError(message: string, data?: Record<string, unknown>): void {
+  console.error(`[api/recommend] ${message}`, data ?? {});
+}
 
 function isMood(input: string): input is Mood {
   return moodOptions.includes(input as Mood);
 }
 
-function shouldUseMockRecommend(): boolean {
-  if (process.env.NODE_ENV === 'development') {
-    return process.env.FORCE_MOCK === 'true';
+// Resolve a stable client IP from common proxy headers.
+function getClientIp(request: Request): string {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0]?.trim() ?? 'unknown';
   }
-
-  return false;
+  return request.headers.get('x-real-ip') ?? 'unknown';
 }
 
+async function checkIpWindowLimit(request: Request): Promise<boolean> {
+  if (!kvClient) {
+    return true;
+  }
+  const ip = getClientIp(request);
+  const key = `rate_limit:ip_5s:${ip}`;
+  const setResult = await kvClient.set(key, '1', {
+    ex: IP_WINDOW_SECONDS_LIMIT,
+    nx: true,
+  });
+  return setResult === 'OK';
+}
+
+// Build a UTC day key in YYYY-MM-DD format.
+function getDayKey(date: Date = new Date()): string {
+  return date.toISOString().slice(0, 10);
+}
+
+// Enforce per-IP daily quota.
+async function checkIpDailyLimit(request: Request): Promise<boolean> {
+  if (!kvClient) {
+    return true;
+  }
+  const ip = getClientIp(request);
+  const dayKey = getDayKey();
+  const key = `rate_limit:ip_daily:${dayKey}:${ip}`;
+  const count = await kvClient.incr(key);
+  if (count === 1) {
+    await kvClient.expire(key, 60 * 60 * 24);
+  }
+  return count <= IP_DAILY_REQUEST_LIMIT;
+}
+
+// Enforce global daily quota across all requests.
+async function checkProjectDailyLimit(): Promise<boolean> {
+  if (!kvClient) {
+    return true;
+  }
+  const dayKey = getDayKey();
+  const key = `rate_limit:project_daily:${dayKey}`;
+  const count = await kvClient.incr(key);
+  if (count === 1) {
+    await kvClient.expire(key, 60 * 60 * 24);
+  }
+  return count <= PROJECT_DAILY_REQUEST_LIMIT;
+}
+
+// Recommend endpoint with layered rate-limit checks.
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    const ip = getClientIp(request);
+    logInfo('request_received', {
+      ip,
+      contentType: request.headers.get('content-type') ?? null,
+    });
+
+    if (!hasKvConfig) {
+      logInfo('rate_limit_skipped_missing_kv_env', {
+        hasKvRestApiUrl: Boolean(kvRestApiUrl),
+        hasKvRestApiToken: Boolean(kvRestApiToken),
+      });
+    }
+
+    const withinLimit = hasKvConfig ? await checkIpWindowLimit(request) : true;
+    const withinIpDailyLimit = hasKvConfig ? await checkIpDailyLimit(request) : true;
+    const withinProjectDailyLimit = hasKvConfig
+      ? await checkProjectDailyLimit()
+      : true;
+    logInfo('rate_limit_check_completed', {
+      ip,
+      withinLimit,
+      withinIpDailyLimit,
+      withinProjectDailyLimit,
+    });
+
+    if (!withinLimit) {
+      logInfo('rate_limited_short_window', { ip });
+      return NextResponse.json(
+        {
+          error: `Too many requests, please retry after ${IP_WINDOW_SECONDS_LIMIT} seconds`,
+        },
+        { status: 429 },
+      );
+    }
+    if (!withinIpDailyLimit) {
+      logInfo('rate_limited_ip_daily', { ip });
+      return NextResponse.json(
+        { error: 'Daily request limit exceeded for this IP' },
+        { status: 429 },
+      );
+    }
+    if (!withinProjectDailyLimit) {
+      logInfo('rate_limited_project_daily', { ip });
+      return NextResponse.json(
+        { error: 'Daily project request limit exceeded' },
+        { status: 429 },
+      );
+    }
+
     const body = (await request.json()) as RecommendRequestBody;
     const moodInput = body.mood;
+    logInfo('request_body_parsed', { ip, mood: moodInput ?? null });
 
     if (!moodInput || !isMood(moodInput)) {
+      logInfo('invalid_mood', { ip, mood: moodInput ?? null });
       return NextResponse.json({ error: 'Invalid mood' }, { status: 400 });
     }
 
-    if (shouldUseMockRecommend()) {
-      return NextResponse.json(DEV_RECOMMEND_MOVIES, { status: 200 });
-    }
-
+    logInfo('recommendation_started', { ip, mood: moodInput });
     const data = await getDeepSeekRecommendationAction(moodInput);
+    logInfo('recommendation_succeeded', { ip, mood: moodInput, count: data.length });
     return NextResponse.json(data, { status: 200 });
   } catch (_error) {
+    const error = _error as Error;
+    logError('recommendation_failed', {
+      errorName: error?.name ?? null,
+      errorMessage: error?.message ?? null,
+    });
     return NextResponse.json(
       { error: 'Recommend service unavailable' },
       { status: 500 },

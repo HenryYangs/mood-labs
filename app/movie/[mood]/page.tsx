@@ -61,10 +61,13 @@ export default function MovieResultPage(): React.JSX.Element {
 
       if (!response.ok) {
         if (!append) {
+          const error = await response.json();
+
           setError(
-            language === "zh"
+            error.error ||
+            (language === "zh"
               ? "推荐服务暂时不可用，请稍后再试。"
-              : "Recommendation service is unavailable. Please try again later."
+              : "Recommendation service is unavailable. Please try again later.")
           );
         }
         return;
