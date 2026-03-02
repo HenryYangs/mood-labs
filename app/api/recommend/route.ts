@@ -114,7 +114,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const withinLimit = hasKvConfig ? await checkIpWindowLimit(request) : true;
-    const withinIpDailyLimit = hasKvConfig ? await checkIpDailyLimit(request) : true;
+    const withinIpDailyLimit = hasKvConfig
+      ? await checkIpDailyLimit(request)
+      : true;
     const withinProjectDailyLimit = hasKvConfig
       ? await checkProjectDailyLimit()
       : true;
@@ -129,7 +131,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       logInfo('rate_limited_short_window', { ip });
       return NextResponse.json(
         {
-          error: `Too many requests, please retry after ${IP_WINDOW_SECONDS_LIMIT} seconds`,
+          error: 'Too many requests, please retry later',
         },
         { status: 429 },
       );
@@ -160,7 +162,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     logInfo('recommendation_started', { ip, mood: moodInput });
     const data = await getDeepSeekRecommendationAction(moodInput);
-    logInfo('recommendation_succeeded', { ip, mood: moodInput, count: data.length });
+    logInfo('recommendation_succeeded', {
+      ip,
+      mood: moodInput,
+      count: data.length,
+    });
     return NextResponse.json(data, { status: 200 });
   } catch (_error) {
     const error = _error as Error;
