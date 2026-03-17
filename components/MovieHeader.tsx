@@ -1,21 +1,26 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
-import logo from "@/app/assets/images/logo-movie.png";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/app/i18n/language-context";
 import { moodLabels } from "@/types/mood";
 import { useEffect, useMemo, useState } from "react";
 
 type MovieHeaderProps = {
+  logo: StaticImageData;
   showChangeMoodButton?: boolean;
   title?: string;
+  changeMoodHref?: string;
+  changeMoodButtonClassName?: string;
 };
 
 export default function MovieHeader({
+  logo,
   showChangeMoodButton = false,
-  title = "MoodLabs/Movie"
+  title = "MoodLabs/Movie",
+  changeMoodHref = "/movie",
+  changeMoodButtonClassName = "bg-linear-to-r from-[#b13a47] to-[#c9464f] hover:from-[#ff0030] hover:to-[#ff1a3d]"
 }: MovieHeaderProps): React.JSX.Element {
   const { language } = useLanguage();
   const moodEmojis = useMemo(() => moodLabels.map((item) => item.emoji), []);
@@ -66,9 +71,9 @@ export default function MovieHeader({
           <Button
             asChild
             size="sm"
-            className="h-12 rounded-xl bg-linear-to-r from-[#b13a47] to-[#c9464f] px-6 text-base text-white shadow-sm transition-all duration-300 hover:bg-linear-to-r hover:from-[#ff0030] hover:to-[#ff1a3d] hover:text-white"
+            className={`h-12 rounded-xl bg-linear-to-r px-6 text-base text-white shadow-sm transition-all duration-300 hover:bg-linear-to-r hover:text-white ${changeMoodButtonClassName}`}
           >
-            <Link href="/movie" className="inline-flex items-center gap-2">
+            <Link href={changeMoodHref} className="inline-flex items-center gap-2">
               <span className="inline-flex w-5 items-center justify-center">
                 {moodEmojis[emojiIndex] ?? "🙂"}
               </span>

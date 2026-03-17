@@ -1,0 +1,7 @@
+.book-theme {
+  --movie-surface: #5b7d84;
+  background:
+    radial-gradient(circle at 12% 12%, rgb(255 255 255 / 30%) 0%, transparent 42%),
+    radial-gradient(circle at 86% 18%, rgb(236 250 255 / 30%) 0%, transparent 44%),
+    linear-gradient(160deg, #d8eef0 0%, #cfe8ec 45%, #c4e1e7 100%);
+}

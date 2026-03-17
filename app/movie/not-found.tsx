@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function NotFound(): React.JSX.Element {
   return (
-    <main className="movie-theme relative mx-auto flex min-h-screen w-full max-w-4xl items-center justify-center px-4 py-10">
+    <main className="movie-theme relative flex min-h-screen w-full items-center justify-center px-4 py-10">
       <section className="space-y-4 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-white">
           Oops! Page Not Found!

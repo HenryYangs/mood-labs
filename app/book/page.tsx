@@ -2,34 +2,34 @@
 
 import MoodCard from "@/components/MoodCard";
 import MovieHeader from "@/components/MovieHeader";
-import logoMovie from "@/app/assets/images/logo-movie.png";
+import logoBook from "@/app/assets/images/logo-book.png";
 import { useLanguage } from "@/app/i18n/language-context";
 import { moodLabelsEn } from "@/lib/moodLabelsEn";
 import { moodLabels, type Mood } from "@/types/mood";
 import { useRouter } from "next/navigation";
 import "./theme.css";
 
-export default function MoviePage(): React.JSX.Element {
+export default function BookPage(): React.JSX.Element {
   const { language } = useLanguage();
   const router = useRouter();
 
   const onSelectMood = (mood: Mood): void => {
-    router.push(`/movie/${mood}`);
+    router.push(`/book/${mood}`);
   };
 
   return (
-    <div className="movie-theme">
+    <div className="book-theme">
       <main className="relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
-        <MovieHeader logo={logoMovie} title="MoodLabs/Movie" />
-        
+        <MovieHeader logo={logoBook} title="MoodLabs/Book" />
+
         <section className="relative">
           <div className="text-center mb-10">
-            <h1 className="mb-4 text-4xl font-bold tracking-tight text-white md:text-5xl nunito">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight text-slate-800 md:text-5xl nunito">
               {language === "zh"
-                ? "跟随你的心情，邂逅高分佳片"
-                : "Discover top-rated movies based on your mood"}
+                ? "跟随你的心情，邂逅宝藏书籍"
+                : "Discover great books based on your mood"}
             </h1>
-            <p className="text-xl text-white/85">
+            <p className="text-xl text-slate-700">
               {language === "zh"
                 ? "你今天心情如何？"
                 : "How are you feeling right now?"}
@@ -52,7 +52,7 @@ export default function MoviePage(): React.JSX.Element {
           </div>
         </section>
 
-        <footer className="mt-10 text-center text-sm text-white/75">
+        <footer className="mt-10 text-center text-sm text-slate-700/90">
           Created By{" "}
           <a
             href="https://x.com/shuzai_dd"

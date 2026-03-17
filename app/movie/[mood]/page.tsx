@@ -2,6 +2,7 @@
 
 import MovieCard from "@/components/MovieCard";
 import MovieHeader from "@/components/MovieHeader";
+import logoMovie from "@/app/assets/images/logo-movie.png";
 import MovieNotFound from "../not-found";
 import { useLanguage } from "@/app/i18n/language-context";
 import { moodLabelsEn } from "@/lib/moodLabelsEn";
@@ -157,8 +158,13 @@ export default function MovieResultPage(): React.JSX.Element {
   }
 
   return (
-    <main className="movie-theme relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
-      <MovieHeader showChangeMoodButton title={headerTitle} />
+    <main className="movie-theme relative min-h-screen w-full px-4 py-10">
+      <MovieHeader
+        logo={logoMovie}
+        showChangeMoodButton
+        title={headerTitle}
+        changeMoodButtonClassName="from-[#b13a47] to-[#c9464f] hover:from-[#ff0030] hover:to-[#ff1a3d]"
+      />
       
       <section className="relative mx-auto space-y-8">
         {loading ? (
