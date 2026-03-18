@@ -158,69 +158,71 @@ export default function MovieResultPage(): React.JSX.Element {
   }
 
   return (
-    <main className="movie-theme relative min-h-screen w-full px-4 py-10">
-      <MovieHeader
-        logo={logoMovie}
-        showChangeMoodButton
-        title={headerTitle}
-        changeMoodButtonClassName="from-[#b13a47] to-[#c9464f] hover:from-[#ff0030] hover:to-[#ff1a3d]"
-      />
-      
-      <section className="relative mx-auto space-y-8">
-        {loading ? (
-          <div className="space-y-4 rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
-            <Skeleton className="h-56 w-full" />
-            <Skeleton className="h-5 w-1/2" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-          </div>
-        ) : null}
+    <div className="movie-theme">
+      <main className="relative mx-auto min-h-screen w-full max-w-4xl px-4 py-10">
+        <MovieHeader
+          logo={logoMovie}
+          showChangeMoodButton
+          title={headerTitle}
+          changeMoodButtonClassName="from-[#b13a47] to-[#c9464f] hover:from-[#ff0030] hover:to-[#ff1a3d]"
+        />
+        
+        <section className="relative mx-auto space-y-8">
+          {loading ? (
+            <div className="space-y-4 rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
+              <Skeleton className="h-56 w-full" />
+              <Skeleton className="h-5 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          ) : null}
 
-        {!loading && error ? (
-          <div className="rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
-            <p className="text-sm text-zinc-600">{error}</p>
-          </div>
-        ) : null}
+          {!loading && error ? (
+            <div className="rounded-2xl bg-white/65 p-6 shadow-md backdrop-blur-2xl sm:p-8">
+              <p className="text-sm text-zinc-600">{error}</p>
+            </div>
+          ) : null}
 
-        {!loading && !error && movies.length ? (
-          <div className="space-y-6">
-            <MovieCard
-              movie={currentMovie}
-              currentIndex={currentIndex}
-              total={movies.length}
-              onPrev={showPrevMovie}
-              onNext={(): void => {
-                void showNextMovie();
-              }}
-              disablePrev={currentIndex === 0}
-              disableNext={currentIndex === movies.length - 1 || loadingMore}
-            />
-          </div>
-        ) : null}
+          {!loading && !error && movies.length ? (
+            <div className="space-y-6">
+              <MovieCard
+                movie={currentMovie}
+                currentIndex={currentIndex}
+                total={movies.length}
+                onPrev={showPrevMovie}
+                onNext={(): void => {
+                  void showNextMovie();
+                }}
+                disablePrev={currentIndex === 0}
+                disableNext={currentIndex === movies.length - 1 || loadingMore}
+              />
+            </div>
+          ) : null}
 
-      </section>
+        </section>
 
-      <footer className="mt-10 text-center text-sm text-white/75">
-        Created By{" "}
-        <a
-          href="https://x.com/shuzai_dd"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          shuzai_daydreaming
-        </a>
-        , Inspired By{" "}
-        <a
-          href="https://mood2movie.com"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          mood2movie.com
-        </a>
-        .
-      </footer>
-    </main>
+        <footer className="mt-10 text-center text-sm text-white/75">
+          Created By{" "}
+          <a
+            href="https://x.com/shuzai_dd"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            shuzai_daydreaming
+          </a>
+          , Inspired By{" "}
+          <a
+            href="https://mood2movie.com"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            mood2movie.com
+          </a>
+          .
+        </footer>
+      </main>
+    </div>
   );
 }
