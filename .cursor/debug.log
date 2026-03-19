@@ -1,0 +1,15 @@
+{"location":"movie/[mood]/page.tsx:useEffect-entry","message":"init effect fired","data":{"isInvalidMood":false,"isLoaded":false,"hasInitialized":false,"routeMood":"romantic"},"hypothesisId":"A-B-E","timestamp":1773930832806}
+{"location":"movie/[mood]/page.tsx:useEffect-entry","message":"init effect fired","data":{"isInvalidMood":false,"isLoaded":true,"hasInitialized":false,"routeMood":"romantic"},"hypothesisId":"A-B-E","timestamp":1773930832825}
+{"location":"movie/[mood]/page.tsx:loadRecommendation-entry","message":"loadRecommendation called","data":{"mood":"romantic","append":false,"hasPrevController":false},"hypothesisId":"C-D","timestamp":1773930832826}
+{"location":"movie/[mood]/page.tsx:useEffect-cleanup","message":"cleanup fired => aborting controller","data":{"hasController":true},"hypothesisId":"A","timestamp":1773930836679}
+{"location":"movie/[mood]/page.tsx:catch-AbortError","message":"fetch aborted (AbortError caught)","data":{"append":false},"hypothesisId":"A-C-D","timestamp":1773930836682}
+{"location":"movie/[mood]/page.tsx:useEffect-entry","message":"init effect fired","data":{"isInvalidMood":false,"isLoaded":true,"hasInitialized":false,"routeMood":"idyllic"},"hypothesisId":"A-B-E","timestamp":1773930842006}
+{"location":"movie/[mood]/page.tsx:loadRecommendation-entry","message":"loadRecommendation called","data":{"mood":"idyllic","append":false,"hasPrevController":false},"hypothesisId":"C-D","timestamp":1773930842007}
+{"location":"movie/[mood]/page.tsx:useEffect-cleanup","message":"cleanup fired => aborting controller","data":{"hasController":true},"hypothesisId":"A","timestamp":1773930842011}
+{"location":"movie/[mood]/page.tsx:useEffect-entry","message":"init effect fired","data":{"isInvalidMood":false,"isLoaded":true,"hasInitialized":true,"routeMood":"idyllic"},"hypothesisId":"A-B-E","timestamp":1773930842012}
+{"location":"movie/[mood]/page.tsx:catch-AbortError","message":"fetch aborted (AbortError caught)","data":{"append":false},"hypothesisId":"A-C-D","timestamp":1773930842012}
+{"location":"movie/[mood]/page.tsx:useEffect-entry","message":"init effect fired","data":{"isInvalidMood":false,"isLoaded":false,"hasInitialized":false,"routeMood":"idyllic"},"hypothesisId":"A-B-E","timestamp":1773930992930}
+{"location":"movie/[mood]/page.tsx:useEffect-entry","message":"init effect fired","data":{"isInvalidMood":false,"isLoaded":true,"hasInitialized":false,"routeMood":"idyllic"},"hypothesisId":"A-B-E","timestamp":1773930992971}
+{"location":"movie/[mood]/page.tsx:loadRecommendation-entry","message":"loadRecommendation called","data":{"mood":"idyllic","append":false,"hasPrevController":false},"hypothesisId":"C-D","timestamp":1773930992973}
+{"location":"movie/[mood]/page.tsx:useEffect-cleanup","message":"cleanup fired => aborting controller","data":{"hasController":true},"hypothesisId":"A","timestamp":1773930996167}
+{"location":"movie/[mood]/page.tsx:catch-AbortError","message":"fetch aborted (AbortError caught)","data":{"append":false},"hypothesisId":"A-C-D","timestamp":1773930996169}

@@ -6,7 +6,6 @@ import logoMovie from "@/app/assets/images/logo-movie.png";
 import MovieNotFound from "../not-found";
 import { useLanguage } from "@/app/i18n/language-context";
 import { moodLabelsEn } from "@/lib/moodLabelsEn";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Movie, RecommendResponse } from "@/types/movie";
 import { moodLabels, moodOptions, type Mood } from "@/types/mood";
@@ -34,6 +33,13 @@ export default function MovieResultPage(): React.JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const hasInitializedRef = useRef<boolean>(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   function normalizeMovies(payload: RecommendResponse): Movie[] {
     if (Array.isArray(payload)) {
@@ -46,6 +52,10 @@ export default function MovieResultPage(): React.JSX.Element {
   }
 
   async function loadRecommendation(mood: Mood, append: boolean): Promise<void> {
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       if (append) {
         setLoadingMore(true);
@@ -60,7 +70,8 @@ export default function MovieResultPage(): React.JSX.Element {
           "Content-Type": "application/json",
           "Language": language ?? "en",
         },
-        body: JSON.stringify({ mood })
+        body: JSON.stringify({ mood }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -96,7 +107,10 @@ export default function MovieResultPage(): React.JSX.Element {
         setMovies(parsedMovies);
         setCurrentIndex(0);
       }
-    } catch (_error) {
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
       if (!append) {
         setError(
           language === "zh"
@@ -105,6 +119,9 @@ export default function MovieResultPage(): React.JSX.Element {
         );
       }
     } finally {
+      if (controller.signal.aborted) {
+        return;
+      }
       if (append) {
         setLoadingMore(false);
       } else {

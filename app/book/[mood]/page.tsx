@@ -46,6 +46,13 @@ export default function BookResultPage(): React.JSX.Element {
   const [error, setError] = useState<string>("");
   const [coverStatuses, setCoverStatuses] = useState<Record<string, CoverStatus>>({});
   const hasInitializedRef = useRef<boolean>(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const headerMoodLabel = isMood(routeMood)
     ? moodLabels.find((item) => item.mood === routeMood)
@@ -77,6 +84,10 @@ export default function BookResultPage(): React.JSX.Element {
   }
 
   async function loadRecommendation(mood: Mood, append: boolean): Promise<void> {
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       if (append) {
         setLoadingMore(true);
@@ -92,7 +103,8 @@ export default function BookResultPage(): React.JSX.Element {
           "Content-Type": "application/json",
           "Language": language ?? "en",
         },
-        body: JSON.stringify({ mood, ...(history.length > 0 && { history }) })
+        body: JSON.stringify({ mood, ...(history.length > 0 && { history }) }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -128,7 +140,10 @@ export default function BookResultPage(): React.JSX.Element {
       }
 
       preloadCovers(payload);
-    } catch (_err) {
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
       if (!append) {
         setError(
           language === "zh"
@@ -137,6 +152,9 @@ export default function BookResultPage(): React.JSX.Element {
         );
       }
     } finally {
+      if (controller.signal.aborted) {
+        return;
+      }
       if (append) {
         setLoadingMore(false);
       } else {
