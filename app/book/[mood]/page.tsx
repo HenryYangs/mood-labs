@@ -31,15 +31,20 @@ function isMood(input: string | null): input is Mood {
 }
 
 export default function BookResultPage(): React.JSX.Element {
-  const { language } = useLanguage();
+  const { language, isLoaded } = useLanguage();
   const params = useParams<{ mood?: string }>();
   const routeMood = params?.mood ?? null;
   const isInvalidMood = !isMood(routeMood);
 
+  type CoverStatus = "loading" | "loaded" | "error";
+
   const [books, setBooks] = useState<BookRecommendation[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [coverStatuses, setCoverStatuses] = useState<Record<string, CoverStatus>>({});
   const hasInitializedRef = useRef<boolean>(false);
 
   const headerMoodLabel = isMood(routeMood)
@@ -51,61 +56,106 @@ export default function BookResultPage(): React.JSX.Element {
       : `Feeling ${headerMoodLabel.emoji} ${moodLabelsEn[headerMoodLabel.mood]}`
     : "MoodLabs/Book";
 
-  async function loadRecommendation(mood: Mood): Promise<void> {
-    try {
-      setLoading(true);
-      setError("");
+  function preloadCovers(payload: BookRecommendation[]): void {
+    const newStatuses: Record<string, CoverStatus> = {};
+    payload.forEach((book) => {
+      if (book.ISBNCode) {
+        newStatuses[book.ISBNCode] = "loading";
+      }
+    });
+    setCoverStatuses((prev) => ({ ...prev, ...newStatuses }));
 
+    payload.forEach((book) => {
+      if (!book.ISBNCode) return;
+      const img = new Image();
+      img.src = `https://covers.openlibrary.org/b/isbn/${book.ISBNCode}-L.jpg`;
+      img.onload = () =>
+        setCoverStatuses((prev) => ({ ...prev, [book.ISBNCode]: "loaded" }));
+      img.onerror = () =>
+        setCoverStatuses((prev) => ({ ...prev, [book.ISBNCode]: "error" }));
+    });
+  }
+
+  async function loadRecommendation(mood: Mood, append: boolean): Promise<void> {
+    try {
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError("");
+      }
+
+      const history = books.map((b) => b.ISBNCode).filter(Boolean);
       const response = await fetch("/api/book-recommend", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mood })
+        headers: {
+          "Content-Type": "application/json",
+          "Language": language ?? "en",
+        },
+        body: JSON.stringify({ mood, ...(history.length > 0 && { history }) })
       });
 
       if (!response.ok) {
-        const err = await response.json();
-        setError(
-          err.error ||
-            (language === "zh"
-              ? "推荐服务暂时不可用，请稍后再试。"
-              : "Recommendation service is unavailable. Please try again later.")
-        );
+        if (!append) {
+          const err = await response.json();
+          setError(
+            err.error ||
+              (language === "zh"
+                ? "推荐服务暂时不可用，请稍后再试。"
+                : "Recommendation service is unavailable. Please try again later.")
+          );
+        }
         return;
       }
 
       const payload = (await response.json()) as BookRecommendation[];
       if (!payload.length) {
-        setError(
-          language === "zh"
-            ? "暂无推荐结果，请稍后再试。"
-            : "No recommendations found. Please try again later."
-        );
+        if (!append) {
+          setError(
+            language === "zh"
+              ? "暂无推荐结果，请稍后再试。"
+              : "No recommendations found. Please try again later."
+          );
+        }
         return;
       }
 
-      setBooks(payload);
-      setCurrentIndex(0);
+      if (append) {
+        setBooks((prev) => [...prev, ...payload]);
+      } else {
+        setBooks(payload);
+        setCurrentIndex(0);
+      }
+
+      preloadCovers(payload);
     } catch (_err) {
-      setError(
-        language === "zh"
-          ? "请求失败，请检查网络后重试。"
-          : "Request failed. Please check your network and try again."
-      );
+      if (!append) {
+        setError(
+          language === "zh"
+            ? "请求失败，请检查网络后重试。"
+            : "Request failed. Please check your network and try again."
+        );
+      }
     } finally {
-      setLoading(false);
+      if (append) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   }
 
   useEffect(() => {
-    if (isInvalidMood) {
+    if (isInvalidMood || !isLoaded) {
       return;
     }
     if (hasInitializedRef.current) {
       return;
     }
     hasInitializedRef.current = true;
-    void loadRecommendation(routeMood);
-  }, [isInvalidMood, routeMood]);
+    setSelectedMood(routeMood);
+    void loadRecommendation(routeMood, false);
+  }, [isInvalidMood, routeMood, isLoaded]);
 
   const currentBook = books[currentIndex];
 
@@ -113,8 +163,18 @@ export default function BookResultPage(): React.JSX.Element {
     setCurrentIndex((prev) => Math.max(0, prev - 1));
   };
 
-  const showNextBook = (): void => {
-    setCurrentIndex((prev) => Math.min(books.length - 1, prev + 1));
+  const showNextBook = async (): Promise<void> => {
+    if (currentIndex >= books.length - 1) return;
+
+    const nextIndex = Math.min(books.length - 1, currentIndex + 1);
+    setCurrentIndex(nextIndex);
+
+    const remainingCount = books.length - (nextIndex + 1);
+    const remainingRatio = books.length === 0 ? 0 : remainingCount / books.length;
+
+    if (remainingRatio < 0.2 && selectedMood && !loadingMore) {
+      await loadRecommendation(selectedMood, true);
+    }
   };
 
   if (isInvalidMood) {
@@ -152,6 +212,20 @@ export default function BookResultPage(): React.JSX.Element {
           {!loading && !error && currentBook ? (
             <div className="overflow-hidden rounded-2xl">
               <div className="space-y-5 bg-(--movie-surface) p-5">
+                {currentBook.ISBNCode && coverStatuses[currentBook.ISBNCode] !== "error" ? (
+                  <div className="flex justify-center">
+                    {coverStatuses[currentBook.ISBNCode] === "loading" ? (
+                      <Skeleton className="h-52 w-36 rounded-lg" />
+                    ) : (
+                      <img
+                        src={`https://covers.openlibrary.org/b/isbn/${currentBook.ISBNCode}-L.jpg`}
+                        alt={currentBook.title}
+                        className="h-52 w-auto rounded-lg object-cover shadow-lg"
+                      />
+                    )}
+                  </div>
+                ) : null}
+
                 <div className="space-y-2">
                   <h2 className="text-2xl font-semibold text-white">{currentBook.title}</h2>
                   <div className="space-y-1 text-sm text-white/85">
@@ -197,8 +271,8 @@ export default function BookResultPage(): React.JSX.Element {
                   </Button>
 
                   <Button
-                    onClick={showNextBook}
-                    disabled={currentIndex === books.length - 1}
+                    onClick={(): void => { void showNextBook(); }}
+                    disabled={currentIndex === books.length - 1 && !loadingMore || currentIndex === books.length - 1 && loadingMore}
                     className="h-12 cursor-pointer rounded-xl bg-linear-to-r from-[#3d6e78] to-[#4e8490] px-6 text-base text-white shadow-sm transition-all duration-300 hover:bg-linear-to-r hover:from-[#2f5f69] hover:to-[#3f7480] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {language === "zh" ? "下一本" : "Next"}

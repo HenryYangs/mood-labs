@@ -7,6 +7,7 @@ export type Language = "en" | "zh";
 type LanguageContextValue = {
   language: Language;
   setLanguage: (language: Language) => void;
+  isLoaded: boolean;
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -19,11 +20,13 @@ const LANGUAGE_STORAGE_KEY = "mood-labs-language";
 
 export function LanguageProvider({ children }: LanguageProviderProps): React.JSX.Element {
   const [language, setLanguage] = useState<Language>("en");
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     const storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
     if (storedLanguage === "zh" || storedLanguage === "en") {
       setLanguage(storedLanguage);
+      setIsLoaded(true);
       return;
     }
 
@@ -31,17 +34,20 @@ export function LanguageProvider({ children }: LanguageProviderProps): React.JSX
     const browserLanguage = window.navigator?.language;
     if (!browserLanguage) {
       setLanguage("en");
+      setIsLoaded(true);
       return;
     }
     setLanguage(browserLanguage.toLowerCase().startsWith("zh") ? "zh" : "en");
+    setIsLoaded(true);
   }, []);
 
   const value = useMemo(
     () => ({
       language,
-      setLanguage
+      setLanguage,
+      isLoaded
     }),
-    [language]
+    [language, isLoaded]
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

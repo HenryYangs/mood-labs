@@ -17,18 +17,23 @@ type DeepSeekResponse = {
   choices?: DeepSeekChoice[];
 };
 
-function buildPrompt(mood: Mood): DeepSeekMessage[] {
+function buildPrompt(mood: Mood, language: 'en' | 'zh'): DeepSeekMessage[] {
+  const languageInstruction =
+    language === 'zh'
+      ? 'Reply in Chinese. All text fields (title, reason) must be in Chinese.'
+      : 'Reply in English.';
+
   return [
     {
       role: 'system',
       content:
-        '你是一个电影推荐助手. 请返回五部电影推荐, 返回的格式为JSON, 请严格遵守JSON格式.',
+        'You are a movie recommendation assistant. Return five movie recommendations in JSON format. Strictly follow the JSON format.',
     },
     {
       role: 'user',
-      content: `用户心情: ${mood}
+      content: `User mood: ${mood}
 
-返回JSON, 格式如下:
+Return JSON in the following format:
 {
   "title": "string",
   "date": "string",
@@ -38,17 +43,18 @@ function buildPrompt(mood: Mood): DeepSeekMessage[] {
   "reason": "string"
 }
 
-规则:
-- 请返回五部电影
-- "date" 电影首次上映的时间，格式为"YYYY-MM-DD"
-- "reason" 推荐理由，请控制在100个字以内
-- "duration" 是电影时长，请返回分钟数
-- "source" 是电影的信息，请返回一个对象，包含以下信息：
-  - url: 电影在YouTube的播放链接，必须是完整版的电影链接
-  - rating：电影在每个平台的评分，满分为10分，数字类型
-  - tag：电影的标签，最多返回前五个，数组形式，使用中文
-- 不要使用Markdown格式
-- JSON内容无需换行符
+Rules:
+- Return exactly five movies
+- "date" is the original release date of the movie, formatted as "YYYY-MM-DD"
+- "reason" is the recommendation reason, limited to 100 words
+- "duration" is the movie runtime in minutes
+- "source" contains movie metadata as an object with:
+  - url: full-length YouTube link for the movie
+  - rating: ratings on each platform out of 10, numeric type
+  - tag: movie tags, up to five, as an array
+- Do not use Markdown format
+- No newlines inside JSON content
+${languageInstruction}
 `,
     },
   ];
@@ -56,13 +62,14 @@ function buildPrompt(mood: Mood): DeepSeekMessage[] {
 
 export async function fetchRecommendationFromDeepSeek(
   mood: Mood,
+  language: 'en' | 'zh' = 'en',
 ): Promise<Movie[]> {
   const apiKey = getRequiredEnv('DEEPSEEK_API_KEY');
   const requestBody = {
     model: 'deepseek-chat',
     temperature: 0.8,
     response_format: { type: 'json_object' },
-    messages: buildPrompt(mood),
+    messages: buildPrompt(mood, language),
     stream: false,
     max_tokens: 5000,
   };

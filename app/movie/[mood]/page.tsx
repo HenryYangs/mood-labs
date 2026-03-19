@@ -22,7 +22,7 @@ function isMood(input: string | null): input is Mood {
 }
 
 export default function MovieResultPage(): React.JSX.Element {
-  const { language } = useLanguage();
+  const { language, isLoaded } = useLanguage();
   const params = useParams<{ mood?: string }>();
   const routeMood = params?.mood ?? null;
   const isInvalidMood = !isMood(routeMood);
@@ -56,7 +56,10 @@ export default function MovieResultPage(): React.JSX.Element {
 
       const response = await fetch("/api/recommend", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Language": language ?? "en",
+        },
         body: JSON.stringify({ mood })
       });
 
@@ -111,7 +114,7 @@ export default function MovieResultPage(): React.JSX.Element {
   }
 
   useEffect(() => {
-    if (isInvalidMood) {
+    if (isInvalidMood || !isLoaded) {
       return;
     }
     if (hasInitializedRef.current) {
@@ -121,7 +124,7 @@ export default function MovieResultPage(): React.JSX.Element {
 
     setSelectedMood(routeMood);
     void loadRecommendation(routeMood, false);
-  }, [isInvalidMood, routeMood]);
+  }, [isInvalidMood, routeMood, isLoaded]);
 
   const currentMovie = movies[currentIndex];
   const headerMoodLabel = isMood(routeMood)

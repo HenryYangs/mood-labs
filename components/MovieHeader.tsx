@@ -22,7 +22,7 @@ export default function MovieHeader({
   changeMoodHref = "/movie",
   changeMoodButtonClassName = "bg-linear-to-r from-[#b13a47] to-[#c9464f] hover:from-[#ff0030] hover:to-[#ff1a3d]"
 }: MovieHeaderProps): React.JSX.Element {
-  const { language } = useLanguage();
+  const { language } = useLanguage();  
   const moodEmojis = useMemo(() => moodLabels.map((item) => item.emoji), []);
   const [emojiIndex, setEmojiIndex] = useState<number>(0);
   const changeMoodLabel = language === "zh" ? "修改心情" : "Edit mood";

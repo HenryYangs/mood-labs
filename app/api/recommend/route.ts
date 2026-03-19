@@ -160,8 +160,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ error: 'Invalid mood' }, { status: 400 });
     }
 
-    logInfo('recommendation_started', { ip, mood: moodInput });
-    const data = await getDeepSeekRecommendationAction(moodInput);
+    const rawLang = request.headers.get('Language') ?? '';
+    const language: 'en' | 'zh' = rawLang === 'zh' ? 'zh' : 'en';
+
+    logInfo('recommendation_started', { ip, mood: moodInput, language });
+    const data = await getDeepSeekRecommendationAction(moodInput, language);
     logInfo('recommendation_succeeded', {
       ip,
       mood: moodInput,
